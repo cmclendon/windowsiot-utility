@@ -7,39 +7,35 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
-namespace IoTBoardDiscovery
+namespace BitUnify.WindowsIoT
 {
     class Program
     {
         static void Main(string[] args)
         {
-            UdpClient client = new UdpClient();
+            WindowsIoTDeviceDiscovery iot = new WindowsIoTDeviceDiscovery();
 
-            client.ExclusiveAddressUse = false;
-            IPEndPoint localEp = new IPEndPoint(IPAddress.Any, 6);
+            iot.DeviceChangedEvent += Iot_DeviceChangedEvent;
+            iot.DeviceDiscoveredEvent += Iot_DeviceDiscoveredEvent;
+            iot.DeviceRemovedEvent += Iot_DeviceRemovedEvent;
 
-            client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            client.ExclusiveAddressUse = false;
+            Task waitTask = iot.Listen();
+            waitTask.Wait();    
+        }
 
-            client.Client.Bind(localEp);
+        private static void Iot_DeviceRemovedEvent(object sender, WindowsIoTDevice device)
+        {
+            Console.WriteLine("Removed device {0} with IP address {1}", device.Name, device.IPAddress);
+        }
 
-            IPAddress mcastAddress = IPAddress.Parse("239.0.0.222");
-            client.JoinMulticastGroup(mcastAddress);
-            
-            while (true)
-            {
-                byte[] data = client.Receive(ref localEp);
-                string strData = Encoding.Unicode.GetString(data);
-                Console.WriteLine(strData);
+        private static void Iot_DeviceDiscoveredEvent(object sender, WindowsIoTDevice device)
+        {
+            Console.WriteLine("Added device {0} with IP address {1}", device.Name, device.IPAddress);
+        }
 
-
-                string[] list = trData.Split("\0", StringSplitOptions.RemoveEmptyEntries);
-
-                string pattern = @"\w+(?=\0)\d*\.\d";
-                foreach (Match match in Regex.Matches(strData, pattern, RegexOptions.IgnoreCase))
-                    Console.WriteLine(match.Value);
-                
-            }          
+        private static void Iot_DeviceChangedEvent(object sender, WindowsIoTDevice device)
+        {
+            Console.WriteLine("Changed device {0} with IP address {1}", device.Name, device.IPAddress);
         }
     }
 }
