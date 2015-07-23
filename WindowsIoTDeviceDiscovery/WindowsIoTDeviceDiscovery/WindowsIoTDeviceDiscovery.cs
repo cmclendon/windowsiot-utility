@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace BitUnify.WindowsIoT
+namespace BitUnify.WindowsIoT.Discovery
 {
     class WindowsIoTDeviceDiscovery
     {

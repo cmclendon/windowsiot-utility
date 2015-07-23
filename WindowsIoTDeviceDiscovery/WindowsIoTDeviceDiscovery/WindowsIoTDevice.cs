@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace BitUnify.WindowsIoT
+namespace BitUnify.WindowsIoT.Discovery
 {
     public class WindowsIoTDevice
     {
