@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace BitUnify.WindowsIoT.Discovery
+namespace BitUnify.Windows.Devices
 {
-    public class WindowsIoTDevice
+    public class WindowsCoreDevice
     {
         private DateTime lastSeen;
         private string name;
         private string macAddress;
-        private string ipAddress;
+        private string networkAddress;
 
-        public static WindowsIoTDevice FromMessage(string message)
+        public static WindowsCoreDevice FromMessage(string message)
         {
-            WindowsIoTDevice device = null;
+            WindowsCoreDevice device = null;
 
             // support limited special characters for computer name 
             string exp1 = "((?:[a-zA-Z0-9]|[_\\-])+)";   
@@ -30,23 +26,15 @@ namespace BitUnify.WindowsIoT.Discovery
 
             if (fields.Success)
             {
-                device = new WindowsIoTDevice();
+                device = new WindowsCoreDevice();
 
                 device.name = fields.Groups[1].ToString();
-                device.ipAddress = fields.Groups[2].ToString();
+                device.networkAddress = fields.Groups[2].ToString();
                 device.macAddress = fields.Groups[3].ToString();
                 device.lastSeen = DateTime.Now;
             }
 
             return device;
-        }
-
-        public DateTime LastSeen
-        {
-            get
-            {
-                return lastSeen;
-            }
         }
 
         public string Name
@@ -57,7 +45,7 @@ namespace BitUnify.WindowsIoT.Discovery
             }
         }
 
-        public string MACAddress
+        public string MacAddress
         {
             get
             {
@@ -65,11 +53,11 @@ namespace BitUnify.WindowsIoT.Discovery
             }
         }
 
-        public string IPAddress
+        public string NetworkAddress
         {
             get
             {
-                return ipAddress;
+                return networkAddress;
 
             }
         }
@@ -79,21 +67,27 @@ namespace BitUnify.WindowsIoT.Discovery
             lastSeen = DateTime.Now;
         }
 
-        public UInt32 GetTimeSinceLastAdvertisementInSeconds()
+        /// <summary>
+        /// Number of seconds since the device was last seen
+        /// </summary>
+        public UInt16 LastPing
         {
-            TimeSpan span = DateTime.Now - lastSeen;
-            return (UInt32)span.TotalSeconds;
+            get
+            {
+                TimeSpan span = DateTime.Now - lastSeen;
+                return (UInt16)span.TotalSeconds;
+            }
         }
 
         public override bool Equals(object obj)
         {
             bool equal = false;
 
-            if (obj is WindowsIoTDevice)
+            if (obj is WindowsCoreDevice)
             {
-                WindowsIoTDevice device = (WindowsIoTDevice)obj;
-                if ((device.IPAddress == IPAddress) &&
-                    (device.MACAddress == MACAddress) &&
+                WindowsCoreDevice device = (WindowsCoreDevice)obj;
+                if ((device.NetworkAddress == NetworkAddress) &&
+                    (device.MacAddress == MacAddress) &&
                     (device.Name == Name))
                 {
                     // objects match

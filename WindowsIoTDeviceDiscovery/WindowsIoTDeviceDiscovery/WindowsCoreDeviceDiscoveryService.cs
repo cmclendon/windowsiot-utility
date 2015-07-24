@@ -6,19 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace BitUnify.WindowsIoT.Discovery
+namespace BitUnify.Windows.Devices
 {
-    class WindowsIoTDeviceDiscovery
+    public class WindowsCoreDeviceDiscoveryService : IDisposable
     {
         #region Events
-        public delegate void DeviceDiscovered(object sender, WindowsIoTDevice device);
-        public event DeviceDiscovered DeviceDiscoveredEvent = null;
-
-        public delegate void DeviceRemoved(object sender, WindowsIoTDevice device);
-        public event DeviceRemoved DeviceRemovedEvent = null;
-
-        public delegate void DeviceChanged(object sender, WindowsIoTDevice device);
-        public event DeviceChanged DeviceChangedEvent = null;
+        public event EventHandler<WindowsCoreDeviceEventArgs> DeviceDiscoveredEvent = null;
+        public event EventHandler<WindowsCoreDeviceEventArgs> DeviceRemovedEvent = null;
+        public event EventHandler<WindowsCoreDeviceEventArgs> DeviceChangedEvent = null;
         #endregion
 
         private UdpClient client;
@@ -27,28 +22,25 @@ namespace BitUnify.WindowsIoT.Discovery
         private Task deviceDiscoverTask;
         private Timer deviceCheckTimer;
 
-        private Dictionary<string, WindowsIoTDevice> devices;
+        private Dictionary<string, WindowsCoreDevice> devices;
 
-        public WindowsIoTDeviceDiscovery()
+        public WindowsCoreDeviceDiscoveryService()
         {
             deviceDiscoverTask = null;
             deviceCheckTimer = null;
 
-            devices = new Dictionary<string, WindowsIoTDevice>();
+            devices = new Dictionary<string, WindowsCoreDevice>();
         }
 
         public Task Listen()
         {
+            // check if we are already listening
             if (deviceDiscoverTask != null)
-            {
-                throw new SystemException("Discovery background task already running");
-            }
-            else
-            {
-                // create a worker task to listen for IoT advertisements
-                deviceDiscoverTask = new Task(() => ListenForMulticastAdvertisements());
-            }
+                return deviceDiscoverTask;
 
+            // create a worker task to listen for IoT advertisements
+            deviceDiscoverTask = new Task(() => ListenForMulticastAdvertisements());
+            
             lock (deviceDiscoverTask)
             {
                 // initialize our udp client
@@ -82,16 +74,16 @@ namespace BitUnify.WindowsIoT.Discovery
 
         private static void CheckForOfflineDevices(object state)
         {
-            WindowsIoTDeviceDiscovery iot = (WindowsIoTDeviceDiscovery)state;
+            WindowsCoreDeviceDiscoveryService iot = (WindowsCoreDeviceDiscoveryService)state;
 
             lock (iot.devices)
             {
                 List<string> removalKeys = new List<string>();
 
-                foreach (WindowsIoTDevice device in iot.devices.Values)
+                foreach (WindowsCoreDevice device in iot.devices.Values)
                 {
-                    if (device.GetTimeSinceLastAdvertisementInSeconds() > 30)
-                        removalKeys.Add(device.MACAddress);
+                    if (device.LastPing > 30)
+                        removalKeys.Add(device.MacAddress);
                 }
 
                 foreach (string key in removalKeys)
@@ -99,8 +91,8 @@ namespace BitUnify.WindowsIoT.Discovery
                     if (iot.DeviceRemovedEvent != null)
                     {
                         // remove device after 30 seconds of no activity
-                        WindowsIoTDevice device = iot.devices[key];
-                        if (iot.DeviceRemovedEvent != null) iot.DeviceRemovedEvent(iot, device);
+                        WindowsCoreDevice device = iot.devices[key];
+                        if (iot.DeviceRemovedEvent != null) iot.DeviceRemovedEvent(iot, new WindowsCoreDeviceEventArgs(device));
                     }
 
                     // remove the key from the collection
@@ -116,37 +108,71 @@ namespace BitUnify.WindowsIoT.Discovery
                 byte[] data = client.Receive(ref localEP);
 
                 string message = Encoding.Unicode.GetString(data);
-                WindowsIoTDevice device = WindowsIoTDevice.FromMessage(message);
+                WindowsCoreDevice device = WindowsCoreDevice.FromMessage(message);
 
                 if (device != null)
                 {
-                    lock(devices)
+                    lock (devices)
                     {
                         // check if this device is already in our collection
-                        if (devices.ContainsKey(device.MACAddress) == true)
+                        if (devices.ContainsKey(device.MacAddress) == true)
                         {
                             // see if any properties have changed
-                            if (device.Equals(devices[device.MACAddress]) == false)
+                            if (device.Equals(devices[device.MacAddress]) == false)
                             {
                                 // replace the device with the updated device object
-                                devices[device.MACAddress] = device;
-                                if (DeviceChangedEvent != null) DeviceChangedEvent(this, device);
+                                devices[device.MacAddress] = device;
+                                if (DeviceChangedEvent != null) DeviceChangedEvent(this, new WindowsCoreDeviceEventArgs(device));
                             }
                             else
                             {
                                 // ping the current device
-                                devices[device.MACAddress].Ping();
+                                devices[device.MacAddress].Ping();
                             }
                         }
                         else
                         {
                             // add the device
-                            devices.Add(device.MACAddress, device);
-                            if (DeviceDiscoveredEvent != null) DeviceDiscoveredEvent(this, device);
+                            devices.Add(device.MacAddress, device);
+                            if (DeviceDiscoveredEvent != null) DeviceDiscoveredEvent(this, new WindowsCoreDeviceEventArgs(device));
                         }
                     }
                 }
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (client != null)
+                    {
+                        deviceCheckTimer.Dispose();
+                        deviceCheckTimer = null;
+
+                        deviceDiscoverTask.Dispose();
+                        deviceDiscoverTask = null;
+
+                        client.Close();
+                        client = null;
+                    }
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
     }
 }
