@@ -1,6 +1,6 @@
 # windowsiot-utility
 
-namespace: BitUnify.Windows.Devices.Enumeration
+namespace: BitUnify.Windows.Devices.Enumeration\n
 projecttype: Win32 Console
 
 DeviceDiscovery
