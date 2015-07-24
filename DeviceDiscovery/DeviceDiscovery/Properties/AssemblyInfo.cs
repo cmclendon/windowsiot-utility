@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Windows IoT Device Discovery Utility")]
+[assembly: AssemblyTitle("Windows 10 Core IoT Multicast Device Discovery")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Christopher McLendon")]
-[assembly: AssemblyProduct("Windows IoT Device Discovery Utility")]
+[assembly: AssemblyCompany("Christopher McLendon (http://www.bitunify.com)")]
+[assembly: AssemblyProduct("DeviceDiscovery")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
