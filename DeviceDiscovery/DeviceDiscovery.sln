@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsIoTDeviceDiscovery", "WindowsIoTDeviceDiscovery\WindowsIoTDeviceDiscovery.csproj", "{0B00AEC9-D9DD-41B6-8E6E-724C2984EB26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceDiscovery", "DeviceDiscovery\DeviceDiscovery.csproj", "{0B00AEC9-D9DD-41B6-8E6E-724C2984EB26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
