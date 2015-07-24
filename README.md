@@ -1,9 +1,12 @@
 # windowsiot-utility
 
-namespace: BitUnify.Windows.Devices.Enumeration\n
+namespace: BitUnify.Windows.Devices.Enumeration
+
 projecttype: Win32 Console
 
+
 DeviceDiscovery
+
     DiscoveryService and Device class that provides an active multicast listener for Windows 10 Core IoT device
     advertisements, services to manage a collection of active devices on the local network, and an eventing 
     architecture to make it easy for subscribers to know when devices go online and offline.  This project 
