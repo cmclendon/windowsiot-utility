@@ -238,7 +238,10 @@ namespace BitUnify.Windows.Devices.Enumeration
                     {
                         // terminate the connection
                         tokenSource.Cancel();
-                        if (ConnectionExceptionEvent != null) ConnectionExceptionEvent(this, new DiscoveryServiceErrorEventArgs(receiveTask.Exception));
+                        
+                        if (ConnectionExceptionEvent != null) 
+                            ConnectionExceptionEvent(this, new DiscoveryServiceErrorEventArgs(receiveTask.Exception));
+                        
                         break;
                     }
                 }
